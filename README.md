@@ -55,4 +55,7 @@ Achieved seamless scaling and high availability, supporting 99.9% uptime for cri
 This project description emphasizes your role in leveraging AWS EC2, Kubernetes, and Argo CD to optimize application deployment and management processes effectively.
 
 ### we can expose the application and check the votes using the votes and reslut app or imgaes with localhost and 5000 and 5001 port
+and i have added 2 jenkins file to this repo 
+one is for building the docker images and pushing into the repository 
+another one is to deploy the application using the docker-compose 
 

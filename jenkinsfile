@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_CREDENTIALS = credentials('docker-hub') // Combine username+password into 1 credential in Jenkins
+    }
+
+
+    stages {
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    sh '''
+                        echo $DOCKER_CREDENTIALS_PSW | docker login --username $DOCKER_CREDENTIALS_USR --password-stdin
+                    '''
+                }
+            }
+        }
+        stage('gitcheckout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/kasikotnani23/k8s-EKS-voting-app.git'
+            }
+        }
+
+        stage('build docker images for result') {
+            steps {
+                dir('result') {
+                    sh 'docker build -t kasikotnani423/voting-app-result:v1 .'
+                    // Push the image to Docker Hub
+                    sh 'docker push kasikotnani423/voting-app-result:v1'
+                }
+            }
+        }
+
+        stage('build docker image using buildx for vote') {
+            steps {
+                dir('vote') {
+                    // Create and use a new builder instance, then build with buildx
+                    sh '''
+                        docker buildx create --name mybuilder --use || true
+                        docker buildx inspect mybuilder --bootstrap
+                        docker buildx build --platform linux/amd64 -t kasikotnani423/voting-app-vote:v1 --load .
+                    '''
+                    // Push the image to Docker Hub
+                    sh 'docker push kasikotnani423/voting-app-vote:v1'
+                }
+            }
+        }
+
+        stage ('build docker image using buildx for worker') {
+            steps {
+                dir ('worker'){
+                    sh '''
+                        docker buildx create --name mybuilder --use || true
+                        docker buildx inspect mybuilder --bootstrap
+                        docker buildx build --platform linux/amd64 -t kasikotnani423/voting-app-worker:v1 --load .
+                    '''
+                    // Push the image to Docker Hub
+                    sh 'docker push kasikotnani423/voting-app-worker:v1'
+                }
+            }
+        }
+
+        stage ('build docker image using buildx for seed-data') {
+            steps {
+                dir ('seed-data'){
+                    sh '''
+                        docker buildx create --name mybuilder --use || true
+                        docker buildx inspect mybuilder --bootstrap
+                        docker buildx build --platform linux/amd64 -t kasikotnani423/voting-app-seed-data:v1 --load .
+                    '''
+                    // Push the image to Docker Hub
+                    sh 'docker push kasikotnani423/voting-app-seed-data:v1'
+                }
+            }
+        }
+    }
+}

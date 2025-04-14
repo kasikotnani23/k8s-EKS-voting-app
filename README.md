@@ -54,7 +54,5 @@ Utilized Argo CD for automated deployment pipelines, enhancing deployment effici
 Achieved seamless scaling and high availability, supporting 99.9% uptime for critical applications.
 This project description emphasizes your role in leveraging AWS EC2, Kubernetes, and Argo CD to optimize application deployment and management processes effectively.
 
-
-### Aapke DevOps Wale Bhaiya
-### [TrainWithShubham](https://www.trainwithshubham.com/)
+### we can expose the application and check the votes using the votes and reslut app or imgaes with localhost and 5000 and 5001 port
 

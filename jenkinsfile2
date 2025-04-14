@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_CREDENTIALS = credentials('docker-hub') // Combine username+password into 1 credential in Jenkins
+        IMAGE_VOTE = 'kasikotnani423/voting-app-vote:v1'
+        IMAGE_RESULT = 'kasikotnani423/voting-app-result:v1'
+        IMAGE_WORKER = 'kasikotnani423/voting-app-worker:v1'
+        IMAGE_SEED = 'kasikotnani423/voting-app-seed-data:v1'
+    }
+
+    stages {
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    sh '''
+                        echo $DOCKER_CREDENTIALS_PSW | docker login --username $DOCKER_CREDENTIALS_USR --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Checkout Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/kasikotnani23/k8s-EKS-voting-app.git'
+            }
+        }
+        stage('Pull Docker Images') {
+            steps {
+                script {
+                    // Pull the Docker images from Docker Hub
+                    sh '''
+                        docker pull $IMAGE_VOTE
+                        docker pull $IMAGE_RESULT
+                        docker pull $IMAGE_WORKER
+                        docker pull $IMAGE_SEED
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Application with Docker Compose') {
+            steps {
+                script {
+                    // Run the docker-compose to start the application
+                    sh '''
+                        docker-compose -f docker-compose.images.yml up -d
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Application deployed successfully with Docker Compose!"
+        }
+        failure {
+            echo "There was an error during deployment. Please check the logs."
+        }
+    }
+}
